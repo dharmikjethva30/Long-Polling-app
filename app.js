@@ -4,35 +4,27 @@ const port = 3000
 const max = 50
 const delay = 2000
 
-let user = []
-
 app.get('/', (req,res,next) => {
-    res.setHeader('Content-Type', 'text/html')
-    res.setHeader("transfer-encoding", "chunked")
+    res.setHeader('Content-Type', 'text/event-stream')
+    set(req,res,0)
+    req.on('close', () => {
+        clearTimeout(req.timeout_id)
+    })
+})
 
-    user.push(res)
-} )
 
-
-let counter = 0
-
-setInterval(function count(){ 
-    console.log(counter);
-    if (++counter > max) {
-        user.map(res => {
-            res.write("DONE Polling");
-            res. end()
-        }
-        )
-        user = []
-        counter = 0
+let set = (req,res,counter) => {
+    if(counter > max) {
+        res.end("DONE")
+        return
     }
-    user.map((res, n) => {
-        res.write(`hi you are ${n} user, counter is ${counter}`);
+    
+    else {
+        res.write(`data: ${counter} interval\n\n`)
+        req.timeout_id = setTimeout(set, delay, req, res, ++counter)
+
     }
-    )
-    setTimeout(count, delay)
-}, delay)
+};
 
 
 
